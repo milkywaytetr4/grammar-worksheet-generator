@@ -5,7 +5,13 @@ import { GenerateRequest, Problem } from "./types";
 import { grammarTree, findNodeById, collectLeaves } from "./grammar-tree";
 import type { GrammarNode } from "./types";
 
-const client = new OpenAI()
+let _client: OpenAI | null = null
+function getClient(): OpenAI {
+    if (!_client) {
+        _client = new OpenAI()
+    }
+    return _client
+}
 
 function buildResponseSchema(leaves: GrammarNode[]) {
     const labels = leaves.map((l) => l.label) as [string, ...string[]]
@@ -49,7 +55,7 @@ export async function generateProblems(
     const leaves = collectLeaves(node)
     const schema = buildResponseSchema(leaves)
 
-    const response = await client.chat.completions.parse({
+    const response = await getClient().chat.completions.parse({
         model: "gpt-4.1",
         temperature: 0.7,
         messages: [
