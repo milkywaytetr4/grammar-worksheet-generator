@@ -13,6 +13,7 @@ export type GrammarNode = {
 export const GeneratedProblemSchema = z.object({
     japanese: z.string(),
     answer: z.string(),
+    grammarPoint: z.string(),
 })
 
 export type GeneratedProblem = z.infer<typeof GeneratedProblemSchema>
