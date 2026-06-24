@@ -673,7 +673,7 @@ export default function Home() {
                     marginBottom: 16,
                   }}
                 >
-                  Φ
+                  ∅
                 </div>
                 <div
                   style={{
