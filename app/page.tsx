@@ -190,6 +190,7 @@ export default function Home() {
           </button>
         </div>
         <div
+          className="print-shell"
           style={{
             display: "flex",
             justifyContent: "center",
