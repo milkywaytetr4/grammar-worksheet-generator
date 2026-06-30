@@ -43,9 +43,22 @@ textarea {
   background-clip: content-box;
 }
 
+.print-editable {
+  border-bottom: 1px dashed #c9c9c0 !important;
+}
+.print-editable:focus {
+  border-bottom: 1px dashed #2d5bd0 !important;
+}
+
 @media print {
   .no-print {
     display: none !important;
+  }
+  .print-editable {
+    border-bottom: none !important;
+  }
+  .print-editable::placeholder {
+    color: transparent !important;
   }
   .print-root {
     position: static !important;

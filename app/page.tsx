@@ -22,6 +22,8 @@ export default function Home() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState({ japanese: "", answer: "" });
   const [printMode, setPrintMode] = useState(false);
+  const [title, setTitle] = useState("英作文 練習プリント");
+  const [instruction, setInstruction] = useState("次の日本文を英語に直しなさい。");
   const [dragId, setDragId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -339,16 +341,42 @@ export default function Home() {
                 marginBottom: 6,
               }}
             >
-              <div style={{ fontSize: 19, fontWeight: 700 }}>
-                英作文 練習プリント
-              </div>
-              <div style={{ fontFamily: MONO, fontSize: 12, color: "#555" }}>
-                英作文 · 全{problems.length}問
-              </div>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="タイトルを入力"
+                className="print-editable"
+                style={{
+                  fontSize: 19,
+                  fontWeight: 700,
+                  border: "none",
+                  outline: "none",
+                  background: "transparent",
+                  color: "inherit",
+                  flex: 1,
+                  minWidth: 0,
+                  padding: "0 0 1px",
+                }}
+              />
             </div>
-            <div style={{ fontSize: 12, color: "#777", marginBottom: 22 }}>
-              次の日本文を英語に直しなさい。
-            </div>
+            <input
+              type="text"
+              value={instruction}
+              onChange={(e) => setInstruction(e.target.value)}
+              placeholder="問題文を入力"
+              className="print-editable"
+              style={{
+                fontSize: 12,
+                color: "#777",
+                marginBottom: 22,
+                border: "none",
+                outline: "none",
+                background: "transparent",
+                width: "100%",
+                padding: "2px 0",
+              }}
+            />
             {problems.map((p, i) => (
               <div
                 key={p.id}
