@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { findNodeById, grammarTree } from "@/lib/grammar-tree";
-import type { Problem } from "@/lib/types";
+import type { GrammarNode, Problem } from "@/lib/types";
 
 const ACCENT = "#2d5bd0";
 const MONO = "var(--font-mono), 'JetBrains Mono', monospace";
@@ -111,6 +111,105 @@ export default function Home() {
     },
     [dragId],
   );
+
+  // ---- grammar tree (再帰描画) ----
+  const renderNode = (node: GrammarNode, depth: number) => {
+    const hasChildren = !!node.children?.length;
+    const selected = selectedId === node.id;
+    const isOpen = !!open[node.id];
+
+    if (hasChildren) {
+      return (
+        <div key={node.id} style={{ marginBottom: depth === 0 ? 2 : 1 }}>
+          <button
+            type="button"
+            onClick={() => toggleCat(node.id)}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              gap: 9,
+              padding: "9px 10px",
+              paddingLeft: 10 + depth * 14,
+              border: "none",
+              background: selected ? "#eef3f0" : "transparent",
+              borderRadius: 8,
+              textAlign: "left",
+            }}
+          >
+            <span
+              style={{
+                fontSize: 10,
+                color: "#b0afa4",
+                transition: ".15s",
+                transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
+                display: "inline-block",
+              }}
+            >
+              ▶
+            </span>
+            <span
+              style={{
+                flex: 1,
+                fontWeight: depth === 0 ? 700 : 600,
+                fontSize: depth === 0 ? 14 : 13,
+                color: selected ? ACCENT : "#33332e",
+              }}
+            >
+              {node.label}
+            </span>
+            <span
+              style={{
+                fontFamily: MONO,
+                fontSize: 11,
+                color: "#b6b5aa",
+              }}
+            >
+              {node.children?.length ?? 0}
+            </span>
+          </button>
+          {isOpen && (
+            <div style={{ margin: "1px 0 6px 0" }}>
+              {(node.children ?? []).map((child) => renderNode(child, depth + 1))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <button
+        type="button"
+        key={node.id}
+        onClick={() => selectNode(node.id, false)}
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "7px 10px",
+          paddingLeft: 22 + depth * 14,
+          border: "none",
+          background: selected ? "#eef3f0" : "transparent",
+          borderLeft: `2px solid ${selected ? ACCENT : "transparent"}`,
+          borderRadius: "0 7px 7px 0",
+          textAlign: "left",
+          marginBottom: 1,
+        }}
+      >
+        <span
+          style={{
+            flex: 1,
+            fontSize: 13,
+            color: selected ? ACCENT : "#5a5a52",
+            fontWeight: selected ? 700 : 500,
+          }}
+        >
+          {node.label}
+        </span>
+      </button>
+    );
+  };
 
   // ===== Print preview =====
   if (printMode) {
@@ -318,98 +417,7 @@ export default function Home() {
             </div>
           </div>
           <div style={{ flex: 1, overflow: "auto", padding: "0 12px 18px" }}>
-            {grammarTree.map((cat) => {
-              const catSelected = selectedId === cat.id;
-              const isOpen = !!open[cat.id];
-              return (
-                <div key={cat.id} style={{ marginBottom: 2 }}>
-                  <button
-                    type="button"
-                    onClick={() => toggleCat(cat.id)}
-                    style={{
-                      width: "100%",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 9,
-                      padding: "9px 10px",
-                      border: "none",
-                      background: catSelected ? "#eef3f0" : "transparent",
-                      borderRadius: 8,
-                      textAlign: "left",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: 10,
-                        color: "#b0afa4",
-                        transition: ".15s",
-                        transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
-                        display: "inline-block",
-                      }}
-                    >
-                      ▶
-                    </span>
-                    <span
-                      style={{
-                        flex: 1,
-                        fontWeight: 700,
-                        fontSize: 14,
-                        color: catSelected ? ACCENT : "#33332e",
-                      }}
-                    >
-                      {cat.label}
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: MONO,
-                        fontSize: 11,
-                        color: "#b6b5aa",
-                      }}
-                    >
-                      {cat.children?.length ?? 0}
-                    </span>
-                  </button>
-                  {isOpen && (
-                    <div style={{ margin: "1px 0 6px 0", paddingLeft: 8 }}>
-                      {(cat.children ?? []).map((leaf) => {
-                        const sel = selectedId === leaf.id;
-                        return (
-                          <button
-                            type="button"
-                            key={leaf.id}
-                            onClick={() => selectNode(leaf.id, false)}
-                            style={{
-                              width: "100%",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 8,
-                              padding: "7px 10px 7px 22px",
-                              border: "none",
-                              background: sel ? "#eef3f0" : "transparent",
-                              borderLeft: `2px solid ${sel ? ACCENT : "transparent"}`,
-                              borderRadius: "0 7px 7px 0",
-                              textAlign: "left",
-                              marginBottom: 1,
-                            }}
-                          >
-                            <span
-                              style={{
-                                flex: 1,
-                                fontSize: 13,
-                                color: sel ? ACCENT : "#5a5a52",
-                                fontWeight: sel ? 700 : 500,
-                              }}
-                            >
-                              {leaf.label}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {grammarTree.map((node) => renderNode(node, 0))}
           </div>
 
           {/* generation panel */}

@@ -82,6 +82,47 @@ export const grammarTree: GrammarNode[] = [
             { id: "passive-byless", label: "by を使わない受動態" },
         ],
     },
+    {
+        id: "article",
+        label: "冠詞",
+        children: [
+            {
+                id: "article-indefinite",
+                label: "不定冠詞 a / an",
+                children: [
+                    { id: "article-a-one-of-many", label: "いくつかあるうちの1つ" },
+                    { id: "article-a-certain", label: "「とある〜」" },
+                    { id: "article-a-one", label: "「1」" },
+                    { id: "article-a-brief", label: "「ちょっと」" },
+                    { id: "article-a-per", label: "「〜につき」" },
+                ],
+            },
+            {
+                id: "article-definite",
+                label: "定冠詞 the",
+                children: [
+                    { id: "article-the-unique", label: "「唯一」" },
+                    { id: "article-the-contrast", label: "対比の the" },
+                    { id: "article-the-nature", label: "環境the" },
+                    { id: "article-the-plural", label: "複数名詞 + the" },
+                    { id: "article-the-relative", label: "関係詞と冠詞" },
+                    { id: "article-the-generic", label: "総称の the" },
+                    { id: "article-the-tool", label: "the + 道具" },
+                    { id: "article-the-adjective", label: "the + 形容詞" },
+                ],
+            },
+            {
+                id: "article-zero",
+                label: "無冠詞 / 不可算名詞",
+                children: [
+                    { id: "article-zero-by", label: "手段の by" },
+                    { id: "article-zero-function", label: "「機能」を表すとき" },
+                    { id: "article-zero-countable", label: "不可算 + 形容詞 → 可算化" },
+                    { id: "article-zero-uncountable", label: "全体集合" },
+                ],
+            },
+        ],
+    },
 ]
 
 // 指定IDのノードをツリーから検索
