@@ -68,6 +68,22 @@ export default function Home() {
     }
   }, [loading, selectedId, count]);
 
+  const addManual = useCallback(() => {
+    const id =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `manual-${Date.now()}`;
+    const newProblem: Problem = {
+      id,
+      japanese: "",
+      answer: "",
+      grammarPoint: selectedLabel,
+    };
+    setProblems((prev) => [...prev, newProblem]);
+    setEditingId(id);
+    setEditDraft({ japanese: "", answer: "" });
+  }, [selectedLabel]);
+
   const del = useCallback((id: string) => {
     setProblems((prev) => prev.filter((p) => p.id !== id));
     setEditingId((cur) => (cur === id ? null : cur));
@@ -94,7 +110,13 @@ export default function Home() {
     setEditingId(null);
   }, [editingId, editDraft]);
 
-  const cancelEdit = useCallback(() => setEditingId(null), []);
+  const cancelEdit = useCallback(() => {
+    // 中身が空のまま（手動追加直後など）キャンセルした場合はカードを残さない
+    setProblems((prev) =>
+      prev.filter((p) => p.id !== editingId || p.japanese || p.answer),
+    );
+    setEditingId(null);
+  }, [editingId]);
 
   const reorder = useCallback(
     (targetId: string) => {
@@ -583,6 +605,29 @@ export default function Home() {
                   {loading ? "生成中…" : "▶　生成する"}
                 </span>
               </button>
+              <button
+                type="button"
+                onClick={addManual}
+                style={{
+                  marginTop: 8,
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  background: "#fff",
+                  color: "#3a3a35",
+                  border: "1px solid #d8d7d1",
+                  height: 40,
+                  borderRadius: 10,
+                  fontSize: 14,
+                  fontWeight: 600,
+                  letterSpacing: ".03em",
+                  cursor: "pointer",
+                }}
+              >
+                <span style={{ fontSize: 13, lineHeight: 1 }}>＋　手動で追加</span>
+              </button>
               {error && (
                 <div style={{ marginTop: 10, fontSize: 12, color: "#b06a58" }}>
                   {error}
@@ -708,7 +753,11 @@ export default function Home() {
                   <span style={{ color: ACCENT, fontWeight: 600 }}>
                     生成する
                   </span>{" "}
-                  を実行してください。
+                  を実行するか、{" "}
+                  <span style={{ color: ACCENT, fontWeight: 600 }}>
+                    手動で追加
+                  </span>{" "}
+                  してください。
                 </div>
               </div>
             ) : (
