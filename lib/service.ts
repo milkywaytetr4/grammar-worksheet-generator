@@ -74,6 +74,9 @@ export function buildPrompt(
         "以下の文法事項について、和文英訳の問題を作成してください。",
         "各文法事項は「ルートのカテゴリ > 中カテゴリ > 具体的な用法」というパスで示します。",
         "パス全体と解説を踏まえ、その用法がまさに問われる問題を作ってください。",
+        "直訳的で構わないので、その日本語を元に英作文したときに、求めている文法事項が自然と入るような形にしてください。",
+        "全体的に見て、生成された文の主語が偏らないようにしてください",
+        "{簡単な主語}{be動詞}{文法事項を含む目的語}の形が多くならないようにして下さい",
         "",
         "【文法事項】",
         pointsBlock,
@@ -104,8 +107,8 @@ export async function generateProblems(
     const idToLabel = new Map(leaves.map((l) => [l.leaf.id, l.leaf.label]))
 
     const response = await getClient().chat.completions.parse({
-        model: "gpt-4.1",
-        temperature: 0.7,
+        model: "gpt-5.4-mini",
+        reasoning_effort: "medium",
         messages: [
             { role: "system", content: buildPrompt(leaves, req.count, req.difficulty) },
         ],
