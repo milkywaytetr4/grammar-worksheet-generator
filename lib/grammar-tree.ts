@@ -148,6 +148,8 @@ export const grammarTree: GrammarNode[] = [
                     { id: "article-the-generic", label: "総称の the" },
                     { id: "article-the-tool", label: "the + 道具" },
                     { id: "article-the-adjective", label: "the + 形容詞" },
+                    { id: "article-the-per-unit", label: "「〜単位で」の the" },
+                    { id: "article-the-media", label: "媒体・情報源の the" },
                 ],
             },
             {

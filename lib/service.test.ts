@@ -37,6 +37,16 @@ describe("buildPrompt", () => {
         expect(prompt).toContain("(id: tough-construction)")
     })
 
+    it("新設した冠詞リーフのパスと解説を含める", () => {
+        const perUnit = buildPrompt(collectLeavesWithPath("article-the-per-unit"), 1)
+        expect(perUnit).toContain("冠詞 > 定冠詞 the > 「〜単位で」の the")
+        expect(perUnit).toContain("by the day")
+
+        const media = buildPrompt(collectLeavesWithPath("article-the-media"), 1)
+        expect(media).toContain("媒体・情報源の the")
+        expect(media).toContain("on the phone")
+    })
+
     it("関係詞では中間ノードの解説も上位文脈として集約される", () => {
         const leaves = collectLeavesWithPath("rel-pronoun-object")
         const prompt = buildPrompt(leaves, 1)
