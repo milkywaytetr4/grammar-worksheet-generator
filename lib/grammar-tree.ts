@@ -154,3 +154,54 @@ export function collectLeaves(node: GrammarNode): GrammarNode[] {
     return node.children.flatMap(collectLeaves)
 }
 
+// リーフとそのパス (ルート→リーフ)
+
+export type LeafWithPath = {
+    leaf: GrammarNode
+    // ルートからリーフまでのノード列。末尾がleaf自身。
+    path: GrammarNode[]
+}
+
+// ルートから指定IDのノードまでの祖先チェーンを取得 (末尾が対象ノード)
+
+function findAncestorPath(
+    id: string,
+    nodes: GrammarNode[] = grammarTree,
+    trail: GrammarNode[] = []
+): GrammarNode[] | undefined {
+    for (const node of nodes) {
+        const nextTrail = [...trail, node]
+        if (node.id === id) {
+            return nextTrail
+        }
+        if (node.children) {
+            const found = findAncestorPath(id, node.children, nextTrail)
+            if (found) {
+                return found
+            }
+        }
+    }
+    return undefined
+}
+
+// 指定ノード配下の全リーフを、ルートからのパス付きで取得
+
+export function collectLeavesWithPath(id: string): LeafWithPath[] {
+    const base = findAncestorPath(id)
+    if (!base) {
+        return []
+    }
+    const node = base[base.length - 1]
+    const prefix = base.slice(0, -1)
+
+    const walk = (current: GrammarNode, ancestors: GrammarNode[]): LeafWithPath[] => {
+        const path = [...ancestors, current]
+        if (!current.children?.length) {
+            return [{ leaf: current, path }]
+        }
+        return current.children.flatMap((child) => walk(child, path))
+    }
+
+    return walk(node, prefix)
+}
+
