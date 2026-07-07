@@ -386,7 +386,7 @@ export default function Home() {
                 style={{
                   display: "flex",
                   gap: 14,
-                  marginBottom: 26,
+                  marginBottom: i === problems.length - 1 ? 0 : 26,
                   breakInside: "avoid",
                 }}
               >
@@ -417,7 +417,7 @@ export default function Home() {
                       {p.answer}
                     </div>
                   ) : (
-                    <div style={{ height: 34, marginTop: 6 }} />
+                    <div style={{ height: 17, marginTop: 8 }} />
                   )}
                 </div>
               </div>
