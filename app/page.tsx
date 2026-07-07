@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import { findNodeById, grammarTree } from "@/lib/grammar-tree";
 import type { GrammarNode, Problem } from "@/lib/types";
 
-const ACCENT = "#2d5bd0";
+const ACCENT = "#4488ff";
 const MONO = "var(--font-mono), 'JetBrains Mono', monospace";
 
 export default function Home() {
@@ -572,15 +572,18 @@ export default function Home() {
                         type="button"
                         onClick={() => setDifficulty(opt.key)}
                         style={{
-                          border: "none",
+                          border: active
+                            ? "1px solid transparent"
+                            : "1px solid #e2e3e7",
                           borderRadius: 999,
                           padding: "7px 17px",
                           fontSize: 13,
-                          fontWeight: active ? 700 : 600,
-                          color: active ? "#fff" : ACCENT,
-                          background: active
-                            ? "rgba(45,91,208,.9)"
-                            : "rgba(45,91,208,.1)",
+                          fontWeight: active ? 700 : 500,
+                          color: active ? "#fff" : "#9297a1",
+                          background: active ? ACCENT : "#f1f2f5",
+                          boxShadow: active
+                            ? "0 2px 6px rgba(69,96,189,.25)"
+                            : "none",
                           cursor: "pointer",
                           transition: "background .15s, color .15s",
                         }}
@@ -678,7 +681,7 @@ export default function Home() {
                   fontSize: 15,
                   fontWeight: 600,
                   letterSpacing: ".05em",
-                  boxShadow: "0 5px 14px rgba(45,91,208,.32)",
+                  boxShadow: "0 5px 14px rgba(69,96,189,.22)",
                   cursor: loading ? "default" : "pointer",
                 }}
               >
