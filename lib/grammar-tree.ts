@@ -38,11 +38,50 @@ export const grammarTree: GrammarNode[] = [
         id: "relative",
         label: "関係詞",
         children: [
-            { id: "rel-pronoun", label: "関係代名詞" },
-            { id: "rel-adverb", label: "関係副詞" },
-            { id: "rel-what", label: "関係代名詞 what" },
+            {
+                id: "rel-pronoun",
+                label: "関係代名詞",
+                children: [
+                    { id: "rel-pronoun-subject", label: "主格" },
+                    { id: "rel-pronoun-object", label: "目的格 (省略可)" },
+                    { id: "rel-pronoun-possessive", label: "所有格 whose" },
+                    { id: "rel-pronoun-prep", label: "前置詞 + 関係代名詞" },
+                    { id: "rel-pronoun-chain", label: "連鎖関係代名詞" },
+                ],
+            },
+            {
+                id: "rel-what",
+                label: "関係代名詞 what",
+                children: [
+                    { id: "rel-what-basic", label: "the thing which" },
+                    { id: "rel-what-idiom", label: "what の慣用表現" },
+                ],
+            },
+            {
+                id: "rel-adjective",
+                label: "関係形容詞",
+                children: [
+                    { id: "rel-adjective-which", label: "which / whose" },
+                    { id: "rel-adjective-what", label: "what (すべての〜)" },
+                ],
+            },
+            {
+                id: "rel-adverb",
+                label: "関係副詞",
+                children: [
+                    { id: "rel-adverb-basic", label: "when / where / why / how" },
+                    { id: "rel-adverb-noantecedent", label: "先行詞の省略 (名詞節)" },
+                ],
+            },
             { id: "rel-nonrestrictive", label: "非制限用法" },
-            { id: "rel-compound", label: "複合関係詞" },
+            {
+                id: "rel-compound",
+                label: "複合関係詞",
+                children: [
+                    { id: "rel-compound-noun", label: "名詞節" },
+                    { id: "rel-compound-adverb", label: "譲歩の副詞節" },
+                ],
+            },
         ],
     },
     {

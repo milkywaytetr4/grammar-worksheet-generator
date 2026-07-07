@@ -52,4 +52,22 @@ describe("collectLeavesWithPath", () => {
     it("存在しないidには空配列を返す", () => {
         expect(collectLeavesWithPath("no-such-id")).toEqual([])
     })
+
+    it("関係詞の入れ子リーフを、ルートからのパス付きで返す", () => {
+        const result = collectLeavesWithPath("rel-pronoun")
+
+        expect(result.map((r) => r.leaf.id)).toEqual([
+            "rel-pronoun-subject",
+            "rel-pronoun-object",
+            "rel-pronoun-possessive",
+            "rel-pronoun-prep",
+            "rel-pronoun-chain",
+        ])
+        const subject = result[0]
+        expect(subject.path.map((n) => n.label)).toEqual([
+            "関係詞",
+            "関係代名詞",
+            "主格",
+        ])
+    })
 })

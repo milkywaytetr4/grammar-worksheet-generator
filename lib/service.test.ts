@@ -36,4 +36,15 @@ describe("buildPrompt", () => {
         expect(prompt).toContain("不定詞 > tough構文")
         expect(prompt).toContain("(id: tough-construction)")
     })
+
+    it("関係詞では中間ノードの解説も上位文脈として集約される", () => {
+        const leaves = collectLeavesWithPath("rel-pronoun-object")
+        const prompt = buildPrompt(leaves, 1)
+
+        expect(prompt).toContain("関係詞 > 関係代名詞 > 目的格 (省略可)")
+        // 親 rel-pronoun の解説が上位文脈として現れる
+        expect(prompt).toContain("上位文脈 (関係代名詞)")
+        // リーフ自身の解説
+        expect(prompt).toContain("目的格は省略できる")
+    })
 })
