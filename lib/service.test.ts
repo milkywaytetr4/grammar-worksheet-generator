@@ -29,6 +29,22 @@ describe("buildPrompt", () => {
         expect(prompt).toContain("one に由来")
     })
 
+    it("難易度 easy では教科書的な指示に切り替わる", () => {
+        const leaves = collectLeavesWithPath("article-a-brief")
+        const easy = buildPrompt(leaves, 1, "easy")
+        const difficult = buildPrompt(leaves, 1, "difficult")
+
+        expect(easy).toContain("教科書的で典型的な例文")
+        expect(easy).not.toContain("実用的な英文を心がけること")
+        expect(difficult).toContain("実用的な英文を心がけること")
+        expect(difficult).not.toContain("教科書的で典型的な例文")
+    })
+
+    it("難易度の既定は difficult", () => {
+        const leaves = collectLeavesWithPath("article-a-brief")
+        expect(buildPrompt(leaves, 1)).toContain("実用的な英文を心がけること")
+    })
+
     it("解説のないリーフでもパスは描画される", () => {
         const leaves = collectLeavesWithPath("tough-construction")
         const prompt = buildPrompt(leaves, 2)

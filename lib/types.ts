@@ -29,9 +29,14 @@ export type Problem = GeneratedProblem & {
 
 // リクエスト
 
+// 難易度: easy=典型的・教科書的 / difficult=実用的
+export const DifficultySchema = z.enum(["easy", "difficult"])
+export type Difficulty = z.infer<typeof DifficultySchema>
+
 export const GenerateRequestSchema = z.object({
     grammarPointId: z.string(),
     count: z.number().int().min(1).max(10),
+    difficulty: DifficultySchema.default("difficult"),
 })
 
 export type GenerateRequest = z.infer<typeof GenerateRequestSchema>

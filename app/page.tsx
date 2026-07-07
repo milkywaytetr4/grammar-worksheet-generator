@@ -17,6 +17,9 @@ export default function Home() {
     return init;
   });
   const [count, setCount] = useState(5);
+  const [difficulty, setDifficulty] = useState<"easy" | "difficult">(
+    "difficult",
+  );
   const [problems, setProblems] = useState<Problem[]>([]);
   const [showAnswers, setShowAnswers] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -56,7 +59,7 @@ export default function Home() {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ grammarPointId: selectedId, count }),
+        body: JSON.stringify({ grammarPointId: selectedId, count, difficulty }),
       });
       if (!res.ok) {
         throw new Error(`生成に失敗しました (${res.status})`);
@@ -68,7 +71,7 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, [loading, selectedId, count]);
+  }, [loading, selectedId, count, difficulty]);
 
   const addManual = useCallback(() => {
     const id =
@@ -537,6 +540,56 @@ export default function Home() {
                 }}
               >
                 {selectedLabel}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 9,
+                  marginTop: 13,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 11,
+                    color: "#7a7e88",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  難易度
+                </span>
+                <div style={{ display: "flex", gap: 7 }}>
+                  {(
+                    [
+                      { key: "easy", label: "典型" },
+                      { key: "difficult", label: "実用" },
+                    ] as const
+                  ).map((opt) => {
+                    const active = difficulty === opt.key;
+                    return (
+                      <button
+                        key={opt.key}
+                        type="button"
+                        onClick={() => setDifficulty(opt.key)}
+                        style={{
+                          border: "none",
+                          borderRadius: 999,
+                          padding: "7px 17px",
+                          fontSize: 13,
+                          fontWeight: active ? 700 : 600,
+                          color: active ? "#fff" : ACCENT,
+                          background: active
+                            ? "rgba(45,91,208,.9)"
+                            : "rgba(45,91,208,.1)",
+                          cursor: "pointer",
+                          transition: "background .15s, color .15s",
+                        }}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
               <div
                 style={{

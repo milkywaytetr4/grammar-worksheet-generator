@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import {zodResponseFormat} from "openai/helpers/zod";
 import { z } from "zod";
 import { GenerateRequest, Problem } from "./types";
+import type { Difficulty } from "./types";
 import { collectLeavesWithPath } from "./grammar-tree";
 import type { LeafWithPath } from "./grammar-tree";
 import { grammarNotes } from "./grammar-notes";
@@ -53,7 +54,19 @@ function renderLeaf(entry: LeafWithPath): string {
     return lines.join("\n")
 }
 
-export function buildPrompt(leaves: LeafWithPath[], count: number): string {
+// 難易度ごとの、英文の作り方に関する要件
+function difficultyRequirement(difficulty: Difficulty): string {
+    if (difficulty === "easy") {
+        return "- 教科書的で典型的な例文にすること: その文法事項が最も素直に現れる形を優先し、主語・語彙・文脈は基本的なものにとどめ、余計な修飾や凝った言い回しは避けること"
+    }
+    return "- 実用的な英文を心がけること: 例えば主語をIやHe以外の法人格や一般名詞にも散らす、ビジネス的な文脈、アカデミック的な文脈、短めの関係詞節を足すなど"
+}
+
+export function buildPrompt(
+    leaves: LeafWithPath[],
+    count: number,
+    difficulty: Difficulty = "difficult"
+): string {
     const pointsBlock = leaves.map(renderLeaf).join("\n\n")
 
     return [
@@ -72,7 +85,7 @@ export function buildPrompt(leaves: LeafWithPath[], count: number): string {
         "- grammarPointには、その問題が対象とする文法事項のidを指定すること",
         "- japaneseには自然な日本語の文を書くこと",
         "- answerにはjapaneseに対応する英文を1つ書くこと",
-        "- 実用的な英文を心がけること: 例えば主語をIやHe以外の法人格や一般名詞にも散らす、ビジネス的な文脈、アカデミック的な文脈、短めの関係詞節を足すなど",
+        difficultyRequirement(difficulty),
         "- 語彙レベルは高校生が理解できる範囲にすること",
     ].join("\n")
 }
@@ -94,7 +107,7 @@ export async function generateProblems(
         model: "gpt-4.1",
         temperature: 0.7,
         messages: [
-            { role: "system", content: buildPrompt(leaves, req.count) },
+            { role: "system", content: buildPrompt(leaves, req.count, req.difficulty) },
         ],
         response_format: zodResponseFormat(schema, "problem_response"),
     })
