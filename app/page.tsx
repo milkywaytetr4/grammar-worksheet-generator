@@ -975,20 +975,22 @@ export default function Home() {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 12,
+                    gap: 60,
                     paddingLeft: 100,
                   }}
                 >
-                  {/* SELECTED: 装飾ラベル。角丸を付けず左アクセントにし、ボタンに見せない */}
+                  {/* SELECTED: 装飾ラベル。角丸を付けず左アクセントにし、ボタンに見せない。
+                      固定幅にして難易度チップの位置がラベル長で動かないようにする */}
                   <div
                     style={{
                       display: "flex",
-                      alignItems: "baseline",
-                      gap: 9,
-                      padding: "8px 14px",
+                      flexDirection: "column",
+                      gap: 3,
+                      padding: "6px 14px",
                       background: "rgba(255,255,255,.55)",
                       borderLeft: `4px solid ${ACCENT}`,
-                      minWidth: 0,
+                      width: 220,
+                      flexShrink: 0,
                     }}
                   >
                     <span
