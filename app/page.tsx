@@ -30,17 +30,16 @@ export default function Home() {
   const [editDraft, setEditDraft] = useState({ japanese: "", answer: "" });
   const [printMode, setPrintMode] = useState(false);
   const [title, setTitle] = useState("英作文 練習プリント");
-  const [instruction, setInstruction] = useState("次の日本文を英語に直しなさい。");
+  const [instruction, setInstruction] = useState(
+    "次の日本文を英語に直しなさい。",
+  );
   const [dragId, setDragId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const selectedNode = useMemo(() => findNodeById(selectedId), [selectedId]);
   const selectedLabel = selectedNode?.label ?? "—";
-  const leaves = useMemo(
-    () => collectLeavesWithPath(selectedId),
-    [selectedId],
-  );
+  const leaves = useMemo(() => collectLeavesWithPath(selectedId), [selectedId]);
   const leafCount = leaves.length;
 
   // ---- actions ----
@@ -200,7 +199,7 @@ export default function Home() {
               padding: "9px 10px",
               paddingLeft: 10 + depth * 14,
               border: "none",
-              background: selected ? "#eef3f0" : "transparent",
+              background: selected ? "#d8e6fb" : "transparent",
               borderRadius: 8,
               textAlign: "left",
             }}
@@ -238,7 +237,9 @@ export default function Home() {
           </button>
           {isOpen && (
             <div style={{ margin: "1px 0 6px 0" }}>
-              {(node.children ?? []).map((child) => renderNode(child, depth + 1))}
+              {(node.children ?? []).map((child) =>
+                renderNode(child, depth + 1),
+              )}
             </div>
           )}
         </div>
@@ -258,7 +259,7 @@ export default function Home() {
           padding: "7px 10px",
           paddingLeft: 22 + depth * 14,
           border: "none",
-          background: selected ? "#eef3f0" : "transparent",
+          background: selected ? "#d8e6fb" : "transparent",
           borderLeft: `2px solid ${selected ? ACCENT : "transparent"}`,
           borderRadius: "0 7px 7px 0",
           textAlign: "left",
@@ -487,8 +488,8 @@ export default function Home() {
           style={{
             width: 300,
             flex: "none",
-            background: "#fbfbf9",
-            borderRight: "1px solid #e5e4df",
+            background: "#eef4fc",
+            borderRight: "2px solid #bbddff",
             display: "flex",
             flexDirection: "column",
             minHeight: 0,
@@ -512,283 +513,6 @@ export default function Home() {
           </div>
           <div style={{ flex: 1, overflow: "auto", padding: "0 12px 18px" }}>
             {grammarTree.map((node) => renderNode(node, 0))}
-          </div>
-
-          {/* generation panel */}
-          <div
-            style={{
-              flex: "none",
-              background: "#ffffff",
-              borderTop: "1px solid #e8e7e2",
-              padding: "15px 16px 17px",
-              boxShadow: "0 -6px 16px rgba(31,40,60,.04)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 7,
-                marginBottom: 10,
-                height: 25,
-              }}
-            >
-              <span
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: "50%",
-                  background: ACCENT,
-                }}
-              />
-              <span
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  letterSpacing: ".14em",
-                  color: ACCENT,
-                  fontFamily: MONO,
-                }}
-              >
-                GENERATE
-              </span>
-            </div>
-            <div
-              style={{
-                background: "#f5f8fd",
-                border: "1px solid #e3e9f6",
-                borderRadius: 13,
-                padding: "13px 13px 14px",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 9,
-                  color: "#9aa0ad",
-                  fontFamily: MONO,
-                  letterSpacing: ".08em",
-                }}
-              >
-                SELECTED
-              </div>
-              <div
-                style={{
-                  fontSize: 15,
-                  fontWeight: 700,
-                  marginTop: 3,
-                  color: "#1b2533",
-                  lineHeight: 1.35,
-                }}
-              >
-                {selectedLabel}
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 9,
-                  marginTop: 13,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 11,
-                    color: "#7a7e88",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  難易度
-                </span>
-                <div style={{ display: "flex", gap: 7 }}>
-                  {(
-                    [
-                      { key: "easy", label: "典型" },
-                      { key: "difficult", label: "実用" },
-                    ] as const
-                  ).map((opt) => {
-                    const active = difficulty === opt.key;
-                    return (
-                      <button
-                        key={opt.key}
-                        type="button"
-                        onClick={() => setDifficulty(opt.key)}
-                        style={{
-                          border: active
-                            ? "1px solid transparent"
-                            : "1px solid #e2e3e7",
-                          borderRadius: 999,
-                          padding: "7px 17px",
-                          fontSize: 13,
-                          fontWeight: active ? 700 : 500,
-                          color: active ? "#fff" : "#9297a1",
-                          background: active ? ACCENT : "#f1f2f5",
-                          boxShadow: active
-                            ? "0 2px 6px rgba(69,96,189,.25)"
-                            : "none",
-                          cursor: "pointer",
-                          transition: "background .15s, color .15s",
-                        }}
-                      >
-                        {opt.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 9,
-                  marginTop: 13,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 11,
-                    color: "#7a7e88",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  問題数
-                </span>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    border: "1px solid #dfe3ec",
-                    borderRadius: 9,
-                    overflow: "hidden",
-                    background: "#fff",
-                  }}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setCountClamped(count - 1)}
-                    style={{
-                      border: "none",
-                      background: "transparent",
-                      width: 32,
-                      height: 34,
-                      fontSize: 17,
-                      color: "#6d6d68",
-                    }}
-                  >
-                    −
-                  </button>
-                  <div
-                    style={{
-                      width: 30,
-                      textAlign: "center",
-                      fontFamily: MONO,
-                      fontWeight: 700,
-                      fontSize: 15,
-                    }}
-                  >
-                    {count}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setCountClamped(count + 1)}
-                    style={{
-                      border: "none",
-                      background: "transparent",
-                      width: 32,
-                      height: 34,
-                      fontSize: 17,
-                      color: "#6d6d68",
-                    }}
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={generate}
-                disabled={loading}
-                style={{
-                  marginTop: 13,
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  background: loading ? "#8aa3e0" : ACCENT,
-                  color: "#fff",
-                  border: "none",
-                  height: 44,
-                  borderRadius: 10,
-                  fontSize: 15,
-                  fontWeight: 600,
-                  letterSpacing: ".05em",
-                  boxShadow: "0 5px 14px rgba(69,96,189,.22)",
-                  cursor: loading ? "default" : "pointer",
-                }}
-              >
-                <span style={{ fontSize: 14, lineHeight: 1 }}>
-                  {loading ? "生成中…" : "▶　生成する"}
-                </span>
-              </button>
-              {leafCount > 1 && (
-                <button
-                  type="button"
-                  onClick={generateEach}
-                  disabled={loading}
-                  style={{
-                    marginTop: 8,
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 8,
-                    background: "#fff",
-                    color: loading ? "#9aa0ad" : ACCENT,
-                    border: `1px solid ${loading ? "#dfe3ec" : "#bcccf0"}`,
-                    height: 40,
-                    borderRadius: 10,
-                    fontSize: 14,
-                    fontWeight: 600,
-                    letterSpacing: ".03em",
-                    cursor: loading ? "default" : "pointer",
-                  }}
-                >
-                  <span style={{ fontSize: 13, lineHeight: 1 }}>
-                    {loading
-                      ? "生成中…"
-                      : `各項目1問ずつ（${leafCount}問）`}
-                  </span>
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={addManual}
-                style={{
-                  marginTop: 8,
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  background: "#fff",
-                  color: "#3a3a35",
-                  border: "1px solid #d8d7d1",
-                  height: 40,
-                  borderRadius: 10,
-                  fontSize: 14,
-                  fontWeight: 600,
-                  letterSpacing: ".03em",
-                  cursor: "pointer",
-                }}
-              >
-                <span style={{ fontSize: 13, lineHeight: 1 }}>＋　手動で追加</span>
-              </button>
-              {error && (
-                <div style={{ marginTop: 10, fontSize: 12, color: "#b06a58" }}>
-                  {error}
-                </div>
-              )}
-            </div>
           </div>
         </aside>
 
@@ -904,7 +628,7 @@ export default function Home() {
                     color: "#8b897e",
                   }}
                 >
-                  左のツリーから項目を選び{" "}
+                  左のツリーで項目を選び、下の{" "}
                   <span style={{ color: ACCENT, fontWeight: 600 }}>
                     生成する
                   </span>{" "}
@@ -1204,6 +928,300 @@ export default function Home() {
                 })}
               </div>
             )}
+          </div>
+
+          {/* generation dock */}
+          <div
+            style={{
+              flex: "none",
+              borderTop: "2px solid #bbddff",
+              background: "#eef4fc",
+              boxShadow: "0 -6px 16px rgba(31,40,60,.05)",
+              padding: "20px 22px 24px",
+            }}
+          >
+            <div style={{ width: "100%" }}>
+              {error && (
+                <div
+                  style={{ marginBottom: 10, fontSize: 12, color: "#b06a58" }}
+                >
+                  {error}
+                </div>
+              )}
+              {/* GENERATION ラベル（左上・単独） */}
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: ".14em",
+                  color: "#6b7c93",
+                  fontFamily: MONO,
+                  marginBottom: 12,
+                }}
+              >
+                GENERATION
+              </div>
+              {/* 操作列: SELECTED → 難易度 →（間隔）→ 各項目1問ずつ → 生成 → 手動 */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  flexWrap: "wrap",
+                }}
+              >
+                {/* SELECTED と難易度をまとめて少し右へ寄せる */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    paddingLeft: 100,
+                  }}
+                >
+                  {/* SELECTED: 装飾ラベル。角丸を付けず左アクセントにし、ボタンに見せない */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "baseline",
+                      gap: 9,
+                      padding: "8px 14px",
+                      background: "rgba(255,255,255,.55)",
+                      borderLeft: `4px solid ${ACCENT}`,
+                      minWidth: 0,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 9,
+                        fontFamily: MONO,
+                        letterSpacing: ".08em",
+                        color: "#8a97ad",
+                      }}
+                    >
+                      SELECTED
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 16,
+                        fontWeight: 700,
+                        color: ACCENT,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {selectedLabel}
+                    </span>
+                  </div>
+                  {/* 難易度 */}
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 11,
+                        color: "#5a6b82",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      難易度
+                    </span>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {(
+                        [
+                          { key: "easy", label: "典型" },
+                          { key: "difficult", label: "実用" },
+                        ] as const
+                      ).map((opt) => {
+                        const active = difficulty === opt.key;
+                        return (
+                          <button
+                            key={opt.key}
+                            type="button"
+                            onClick={() => setDifficulty(opt.key)}
+                            style={{
+                              border: active
+                                ? "1px solid transparent"
+                                : "1px solid #cdddef",
+                              borderRadius: 999,
+                              padding: "6px 14px",
+                              fontSize: 13,
+                              fontWeight: active ? 700 : 500,
+                              color: active ? "#fff" : "#5f7091",
+                              background: active ? ACCENT : "#ffffff",
+                              boxShadow: active
+                                ? "0 2px 6px rgba(69,96,189,.25)"
+                                : "none",
+                              cursor: "pointer",
+                              transition: "background .15s, color .15s",
+                            }}
+                          >
+                            {opt.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+                {/* 難易度とボタン群の間隔 */}
+                <div style={{ flex: 1, minWidth: 20 }} />
+                {/* 各項目1問ずつ: 白地に青のセカンダリ */}
+                {leafCount > 1 && (
+                  <button
+                    type="button"
+                    onClick={generateEach}
+                    disabled={loading}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      background: "#fff",
+                      color: loading ? "#9aa0ad" : ACCENT,
+                      border: `1px solid ${loading ? "#dfe3ec" : "#bcccf0"}`,
+                      height: 44,
+                      padding: "0 18px",
+                      borderRadius: 10,
+                      fontSize: 14,
+                      fontWeight: 700,
+                      letterSpacing: ".03em",
+                      whiteSpace: "nowrap",
+                      cursor: loading ? "default" : "pointer",
+                    }}
+                  >
+                    <span style={{ fontSize: 11, lineHeight: 1 }}>▶</span>
+                    各項目1問ずつ（{leafCount}問）
+                  </button>
+                )}
+                {/* 生成: ▶を左に、問題数ステッパーを内蔵。全体が生成のクリック領域 */}
+                {/* biome-ignore lint/a11y/useSemanticElements: 内部に −/+ ボタンを持つため button ではなく role=button の div にしている */}
+                <div
+                  role="button"
+                  tabIndex={loading ? -1 : 0}
+                  aria-label="生成する"
+                  onClick={() => {
+                    if (!loading) generate();
+                  }}
+                  onKeyDown={(e) => {
+                    if ((e.key === "Enter" || e.key === " ") && !loading) {
+                      e.preventDefault();
+                      generate();
+                    }
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    height: 44,
+                    borderRadius: 10,
+                    background: loading ? "#8aa3e0" : ACCENT,
+                    boxShadow: "0 5px 14px rgba(69,96,189,.22)",
+                    padding: "0 6px 0 14px",
+                    cursor: loading ? "default" : "pointer",
+                  }}
+                >
+                  <span style={{ color: "#fff", fontSize: 11, lineHeight: 1 }}>
+                    ▶
+                  </span>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      background: "rgba(255,255,255,.2)",
+                      borderRadius: 8,
+                      height: 32,
+                      marginLeft: 10,
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCountClamped(count - 1);
+                      }}
+                      disabled={loading}
+                      aria-label="問題数を減らす"
+                      style={{
+                        border: "none",
+                        background: "transparent",
+                        width: 28,
+                        height: 32,
+                        fontSize: 18,
+                        color: "#fff",
+                        cursor: loading ? "default" : "pointer",
+                      }}
+                    >
+                      −
+                    </button>
+                    <span
+                      style={{
+                        minWidth: 32,
+                        textAlign: "center",
+                        color: "#fff",
+                        fontFamily: MONO,
+                        fontWeight: 700,
+                        fontSize: 14,
+                      }}
+                    >
+                      {count}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCountClamped(count + 1);
+                      }}
+                      disabled={loading}
+                      aria-label="問題数を増やす"
+                      style={{
+                        border: "none",
+                        background: "transparent",
+                        width: 28,
+                        height: 32,
+                        fontSize: 18,
+                        color: "#fff",
+                        cursor: loading ? "default" : "pointer",
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <span
+                    style={{
+                      color: "#fff",
+                      fontWeight: 700,
+                      fontSize: 15,
+                      letterSpacing: ".04em",
+                      padding: "0 12px",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {loading ? "生成中…" : "問生成する"}
+                  </span>
+                </div>
+                {/* 手動で追加: ニュートラル */}
+                <button
+                  type="button"
+                  onClick={addManual}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    background: "#fff",
+                    color: "#3a3a35",
+                    border: "1px solid #cdd6e4",
+                    height: 40,
+                    padding: "0 14px",
+                    borderRadius: 10,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    cursor: "pointer",
+                  }}
+                >
+                  ＋ 手動で追加
+                </button>
+              </div>
+            </div>
           </div>
         </main>
       </div>
