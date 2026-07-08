@@ -1,7 +1,11 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { findNodeById, grammarTree } from "@/lib/grammar-tree";
+import {
+  collectLeavesWithPath,
+  findNodeById,
+  grammarTree,
+} from "@/lib/grammar-tree";
 import type { GrammarNode, Problem } from "@/lib/types";
 
 const ACCENT = "#4488ff";
@@ -33,6 +37,11 @@ export default function Home() {
 
   const selectedNode = useMemo(() => findNodeById(selectedId), [selectedId]);
   const selectedLabel = selectedNode?.label ?? "—";
+  const leaves = useMemo(
+    () => collectLeavesWithPath(selectedId),
+    [selectedId],
+  );
+  const leafCount = leaves.length;
 
   // ---- actions ----
   const selectNode = useCallback((id: string, isCategory: boolean) => {
@@ -72,6 +81,38 @@ export default function Home() {
       setLoading(false);
     }
   }, [loading, selectedId, count, difficulty]);
+
+  // 選択カテゴリ配下の全リーフに対して1問ずつ生成する
+  const generateEach = useCallback(async () => {
+    if (loading) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const results = await Promise.all(
+        leaves.map(async ({ leaf }) => {
+          const res = await fetch("/api/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              grammarPointId: leaf.id,
+              count: 1,
+              difficulty,
+            }),
+          });
+          if (!res.ok) {
+            throw new Error(`生成に失敗しました (${res.status})`);
+          }
+          const data = (await res.json()) as { problems: Problem[] };
+          return data.problems;
+        }),
+      );
+      setProblems((prev) => [...prev, ...results.flat()]);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "生成に失敗しました");
+    } finally {
+      setLoading(false);
+    }
+  }, [loading, leaves, difficulty]);
 
   const addManual = useCallback(() => {
     const id =
@@ -689,6 +730,36 @@ export default function Home() {
                   {loading ? "生成中…" : "▶　生成する"}
                 </span>
               </button>
+              {leafCount > 1 && (
+                <button
+                  type="button"
+                  onClick={generateEach}
+                  disabled={loading}
+                  style={{
+                    marginTop: 8,
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    background: "#fff",
+                    color: loading ? "#9aa0ad" : ACCENT,
+                    border: `1px solid ${loading ? "#dfe3ec" : "#bcccf0"}`,
+                    height: 40,
+                    borderRadius: 10,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    letterSpacing: ".03em",
+                    cursor: loading ? "default" : "pointer",
+                  }}
+                >
+                  <span style={{ fontSize: 13, lineHeight: 1 }}>
+                    {loading
+                      ? "生成中…"
+                      : `各項目1問ずつ（${leafCount}問）`}
+                  </span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={addManual}
