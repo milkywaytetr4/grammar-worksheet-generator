@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   collectLeavesWithPath,
   findNodeById,
@@ -15,6 +16,9 @@ import type {
 
 const ACCENT = "#4488ff";
 const MONO = "var(--font-mono), 'JetBrains Mono', monospace";
+
+const clamp = (v: number, min: number, max: number) =>
+  Math.max(min, Math.min(max, v));
 
 export default function Home() {
   const [selectedId, setSelectedId] = useState("to-inf-noun");
@@ -53,6 +57,9 @@ export default function Home() {
   const [chatPending, setChatPending] = useState<string | null>(null);
   // 直近に候補で置換された問題id（文字色アニメーション用）
   const [replacedId, setReplacedId] = useState<string | null>(null);
+  // 各パネルの可変サイズ（境界ドラッグで調整）
+  const [sidebarWidth, setSidebarWidth] = useState(300);
+  const [chatWidth, setChatWidth] = useState(380);
 
   const selectedNode = useMemo(() => findNodeById(selectedId), [selectedId]);
   const selectedLabel = selectedNode?.label ?? "—";
@@ -586,7 +593,7 @@ export default function Home() {
         {/* Sidebar */}
         <aside
           style={{
-            width: 300,
+            width: sidebarWidth,
             flex: "none",
             background: "#eef4fc",
             borderRight: "2px solid #bbddff",
@@ -615,6 +622,14 @@ export default function Home() {
             {grammarTree.map((node) => renderNode(node, 0))}
           </div>
         </aside>
+
+        {/* 左サイドバー↔ワークスペースの境界 */}
+        <Resizer
+          axis="x"
+          onResize={(d) =>
+            setSidebarWidth((w) => clamp(w + d, 180, 620))
+          }
+        />
 
         {/* Workspace */}
         <main
@@ -1073,7 +1088,14 @@ export default function Home() {
           </div>
 
           {chatProblemId && (
+            <Resizer
+              axis="x"
+              onResize={(d) => setChatWidth((w) => clamp(w - d, 280, 720))}
+            />
+          )}
+          {chatProblemId && (
             <ChatPanel
+              width={chatWidth}
               history={chatHistories[chatProblemId] ?? []}
               input={chatInput}
               onInput={setChatInput}
@@ -1389,6 +1411,7 @@ export default function Home() {
 }
 
 function ChatPanel({
+  width,
   history,
   input,
   onInput,
@@ -1399,6 +1422,7 @@ function ChatPanel({
   onClose,
   onApply,
 }: {
+  width: number;
   history: ReviseTurn[];
   input: string;
   onInput: (v: string) => void;
@@ -1412,7 +1436,7 @@ function ChatPanel({
   return (
     <aside
       style={{
-        width: 380,
+        width,
         flex: "none",
         margin: "16px 16px 16px 0",
         border: "1px solid #cfe0f5",
@@ -1658,6 +1682,63 @@ function ChatPanel({
         </button>
       </div>
     </aside>
+  );
+}
+
+// パネル間の境界。ドラッグで隣接パネルのサイズを増減させる。
+// axis="x": 縦の仕切り（左右にドラッグ）, axis="y": 横の仕切り（上下にドラッグ）
+function Resizer({
+  axis,
+  onResize,
+}: {
+  axis: "x" | "y";
+  onResize: (delta: number) => void;
+}) {
+  const [active, setActive] = useState(false);
+  const last = useRef(0);
+
+  const onPointerDown = useCallback(
+    (e: ReactPointerEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      last.current = axis === "x" ? e.clientX : e.clientY;
+      setActive(true);
+      const move = (ev: PointerEvent) => {
+        const cur = axis === "x" ? ev.clientX : ev.clientY;
+        onResize(cur - last.current);
+        last.current = cur;
+      };
+      const up = () => {
+        setActive(false);
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", up);
+        document.body.style.userSelect = "";
+        document.body.style.cursor = "";
+      };
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", up);
+      document.body.style.userSelect = "none";
+      document.body.style.cursor = axis === "x" ? "col-resize" : "row-resize";
+    },
+    [axis, onResize],
+  );
+
+  const horizontal = axis === "x";
+  return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: パネル境界のドラッグ用ハンドル
+    <div
+      onPointerDown={onPointerDown}
+      style={{
+        flex: "none",
+        position: "relative",
+        zIndex: 5,
+        background: active ? ACCENT : "transparent",
+        transition: active ? "none" : "background .15s",
+        cursor: horizontal ? "col-resize" : "row-resize",
+        ...(horizontal
+          ? { width: 6, margin: "0 -3px" }
+          : { height: 6, margin: "-3px 0" }),
+      }}
+    />
   );
 }
 
