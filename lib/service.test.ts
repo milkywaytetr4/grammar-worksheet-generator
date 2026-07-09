@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { buildPrompt } from "./service"
+import { buildPrompt, buildReviseSystemPrompt } from "./service"
 import { collectLeavesWithPath } from "./grammar-tree"
 
 describe("buildPrompt", () => {
@@ -72,5 +72,35 @@ describe("buildPrompt", () => {
         expect(prompt).toContain("上位文脈 (関係代名詞)")
         // リーフ自身の解説
         expect(prompt).toContain("目的格は省略できる")
+    })
+})
+
+describe("buildReviseSystemPrompt", () => {
+    it("修正機能の基本要件を含む", () => {
+        const prompt = buildReviseSystemPrompt()
+
+        expect(prompt).toContain("修正案は3つ提示すること")
+        expect(prompt).toContain("japanese")
+        expect(prompt).toContain("answer")
+    })
+
+    it("grammarPointIdを渡すと文法文脈を注入する", () => {
+        const prompt = buildReviseSystemPrompt("article-a-brief")
+
+        expect(prompt).toContain("【文法事項】")
+        expect(prompt).toContain("冠詞 > 不定冠詞 a / an > 「ちょっと」")
+        expect(prompt).toContain("(id: article-a-brief)")
+    })
+
+    it("grammarPointIdなしでは文法文脈を含めない", () => {
+        const prompt = buildReviseSystemPrompt()
+
+        expect(prompt).not.toContain("【文法事項】")
+    })
+
+    it("存在しないgrammarPointIdでは文法文脈を含めない", () => {
+        const prompt = buildReviseSystemPrompt("nonexistent-id")
+
+        expect(prompt).not.toContain("【文法事項】")
     })
 })

@@ -6,7 +6,12 @@ import {
   findNodeById,
   grammarTree,
 } from "@/lib/grammar-tree";
-import type { GrammarNode, Problem } from "@/lib/types";
+import type {
+  GrammarNode,
+  Problem,
+  ReviseCandidate,
+  ReviseTurn,
+} from "@/lib/types";
 
 const ACCENT = "#4488ff";
 const MONO = "var(--font-mono), 'JetBrains Mono', monospace";
@@ -36,6 +41,16 @@ export default function Home() {
   const [dragId, setDragId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // チャット（修正）機能
+  const [chatProblemId, setChatProblemId] = useState<string | null>(null);
+  const [chatHistories, setChatHistories] = useState<
+    Record<string, ReviseTurn[]>
+  >({});
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
+  // 直近に候補で置換された問題id（文字色アニメーション用）
+  const [replacedId, setReplacedId] = useState<string | null>(null);
 
   const selectedNode = useMemo(() => findNodeById(selectedId), [selectedId]);
   const selectedLabel = selectedNode?.label ?? "—";
@@ -132,12 +147,90 @@ export default function Home() {
   const del = useCallback((id: string) => {
     setProblems((prev) => prev.filter((p) => p.id !== id));
     setEditingId((cur) => (cur === id ? null : cur));
+    setChatProblemId((cur) => (cur === id ? null : cur));
   }, []);
 
   const clearAll = useCallback(() => {
     setProblems([]);
     setEditingId(null);
+    setChatProblemId(null);
   }, []);
+
+  // ---- chat (修正) ----
+  const openChat = useCallback((p: Problem) => {
+    // 編集内容が置換で失われないよう、チャットを開くときは編集を閉じる
+    setEditingId(null);
+    setChatProblemId(p.id);
+    setChatInput("");
+    setChatError(null);
+  }, []);
+
+  const closeChat = useCallback(() => {
+    setChatProblemId(null);
+    setChatError(null);
+  }, []);
+
+  const sendChat = useCallback(async () => {
+    if (chatLoading) return;
+    const target = problems.find((p) => p.id === chatProblemId);
+    const prompt = chatInput.trim();
+    if (!target || !prompt) return;
+
+    setChatLoading(true);
+    setChatError(null);
+    try {
+      const res = await fetch("/api/revise", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          japanese: target.japanese,
+          answer: target.answer,
+          prompt,
+          grammarPointId: target.grammarPointId,
+          history: chatHistories[target.id] ?? [],
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(`修正の生成に失敗しました (${res.status})`);
+      }
+      const data = (await res.json()) as {
+        message: string;
+        candidates: ReviseCandidate[];
+      };
+      const turn: ReviseTurn = {
+        prompt,
+        message: data.message,
+        candidates: data.candidates,
+      };
+      setChatHistories((prev) => ({
+        ...prev,
+        [target.id]: [...(prev[target.id] ?? []), turn],
+      }));
+      setChatInput("");
+    } catch (e) {
+      setChatError(e instanceof Error ? e.message : "修正の生成に失敗しました");
+    } finally {
+      setChatLoading(false);
+    }
+  }, [chatLoading, problems, chatProblemId, chatInput, chatHistories]);
+
+  const applyCandidate = useCallback(
+    (problemId: string, candidate: ReviseCandidate) => {
+      setProblems((prev) =>
+        prev.map((p) =>
+          p.id === problemId
+            ? { ...p, japanese: candidate.japanese, answer: candidate.answer }
+            : p,
+        ),
+      );
+      // 置換された文字をしばらく青く見せる
+      setReplacedId(problemId);
+      window.setTimeout(() => {
+        setReplacedId((cur) => (cur === problemId ? null : cur));
+      }, 2000);
+    },
+    [],
+  );
 
   const startEdit = useCallback((p: Problem) => {
     setEditingId(p.id);
@@ -558,7 +651,10 @@ export default function Home() {
             </button>
             <button
               type="button"
-              onClick={() => setPrintMode(true)}
+              onClick={() => {
+                setChatProblemId(null);
+                setPrintMode(true);
+              }}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -576,7 +672,8 @@ export default function Home() {
             </button>
           </div>
 
-          {/* problem list */}
+          {/* problem list + chat panel */}
+          <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
           <div style={{ flex: 1, overflow: "auto", padding: "22px 26px 40px" }}>
             {problems.length === 0 ? (
               <div
@@ -670,7 +767,11 @@ export default function Home() {
                         display: "flex",
                         gap: 14,
                         background: "#fff",
-                        border: `1px solid ${dragId === p.id ? ACCENT : "#e9e8e3"}`,
+                        border: `1px solid ${
+                          dragId === p.id || chatProblemId === p.id
+                            ? ACCENT
+                            : "#e9e8e3"
+                        }`,
                         borderRadius: 12,
                         padding: "16px 18px",
                         boxShadow: "0 1px 2px rgba(0,0,0,.03)",
@@ -736,7 +837,15 @@ export default function Home() {
                         {!editing ? (
                           <>
                             <div style={{ fontSize: 15, lineHeight: 1.7 }}>
-                              {p.japanese}
+                              <span
+                                style={{
+                                  color:
+                                    replacedId === p.id ? ACCENT : "#1b1b19",
+                                  transition: "color 1.2s ease",
+                                }}
+                              >
+                                {p.japanese}
+                              </span>
                               <span
                                 style={{
                                   marginLeft: 8,
@@ -759,9 +868,11 @@ export default function Home() {
                                   paddingTop: 9,
                                   borderTop: "1px dashed #e6e5e0",
                                   fontSize: 14,
-                                  color: ACCENT,
+                                  color:
+                                    replacedId === p.id ? "#0a3aa0" : ACCENT,
                                   fontWeight: 500,
                                   lineHeight: 1.6,
+                                  transition: "color 1.2s ease",
                                 }}
                               >
                                 {p.answer}
@@ -879,6 +990,30 @@ export default function Home() {
                         )}
                       </div>
 
+                      {/* chat: 編集ボタンの左に中央揃えで配置 */}
+                      {!editing && (
+                        <button
+                          type="button"
+                          onClick={() => openChat(p)}
+                          title="修正を相談"
+                          style={{
+                            alignSelf: "center",
+                            flex: "none",
+                            width: 32,
+                            height: 32,
+                            border: `1px solid ${chatProblemId === p.id ? ACCENT : "#cdd6e4"}`,
+                            background: chatProblemId === p.id ? ACCENT : "#fff",
+                            color: chatProblemId === p.id ? "#fff" : ACCENT,
+                            borderRadius: 8,
+                            fontSize: 15,
+                            lineHeight: 1,
+                            cursor: "pointer",
+                          }}
+                        >
+                          💬
+                        </button>
+                      )}
+
                       {/* actions */}
                       {!editing && (
                         <div
@@ -928,6 +1063,20 @@ export default function Home() {
                 })}
               </div>
             )}
+          </div>
+
+          {chatProblemId && (
+            <ChatPanel
+              history={chatHistories[chatProblemId] ?? []}
+              input={chatInput}
+              onInput={setChatInput}
+              loading={chatLoading}
+              error={chatError}
+              onSend={sendChat}
+              onClose={closeChat}
+              onApply={(candidate) => applyCandidate(chatProblemId, candidate)}
+            />
+          )}
           </div>
 
           {/* generation dock */}
@@ -1228,6 +1377,252 @@ export default function Home() {
         </main>
       </div>
     </div>
+  );
+}
+
+function ChatPanel({
+  history,
+  input,
+  onInput,
+  loading,
+  error,
+  onSend,
+  onClose,
+  onApply,
+}: {
+  history: ReviseTurn[];
+  input: string;
+  onInput: (v: string) => void;
+  loading: boolean;
+  error: string | null;
+  onSend: () => void;
+  onClose: () => void;
+  onApply: (candidate: ReviseCandidate) => void;
+}) {
+  return (
+    <aside
+      style={{
+        width: 380,
+        flex: "none",
+        borderLeft: "2px solid #bbddff",
+        background: "#f7faff",
+        display: "flex",
+        flexDirection: "column",
+        minHeight: 0,
+      }}
+    >
+      {/* header */}
+      <div
+        style={{
+          flex: "none",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "12px 16px",
+          borderBottom: "1px solid #e0e8f4",
+        }}
+      >
+        <span style={{ fontSize: 16 }}>💬</span>
+        <div
+          style={{
+            flex: 1,
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#3a4a63",
+            fontFamily: MONO,
+            letterSpacing: ".06em",
+          }}
+        >
+          修正を相談
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          title="閉じる"
+          style={{
+            border: "1px solid #d6dded",
+            background: "#fff",
+            color: "#6d6d68",
+            width: 28,
+            height: 28,
+            borderRadius: 7,
+            fontSize: 13,
+            cursor: "pointer",
+          }}
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* history */}
+      <div
+        style={{
+          flex: 1,
+          overflow: "auto",
+          padding: "16px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 16,
+        }}
+      >
+        {history.length === 0 && (
+          <div
+            style={{
+              fontSize: 13,
+              lineHeight: 1.7,
+              color: "#8b95a6",
+              padding: "8px 2px",
+            }}
+          >
+            この問題への修正を指示してください。例:「もっと平易な表現に」「日常的なシチュエーションを意識して」など。
+          </div>
+        )}
+        {history.map((turn, ti) => (
+          <div
+            key={`${ti}-${turn.prompt}`}
+            style={{ display: "flex", flexDirection: "column", gap: 10 }}
+          >
+            {/* ユーザ指示 */}
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <div
+                style={{
+                  maxWidth: "85%",
+                  background: ACCENT,
+                  color: "#fff",
+                  padding: "8px 12px",
+                  borderRadius: "12px 12px 3px 12px",
+                  fontSize: 13,
+                  lineHeight: 1.6,
+                }}
+              >
+                {turn.prompt}
+              </div>
+            </div>
+            {/* AIの一言 */}
+            <div
+              style={{
+                fontSize: 13,
+                color: "#4a5568",
+                lineHeight: 1.6,
+                padding: "0 2px",
+              }}
+            >
+              {turn.message}
+            </div>
+            {/* 候補 */}
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: 8 }}
+            >
+              {turn.candidates.map((c, ci) => (
+                <button
+                  type="button"
+                  key={`${ci}-${c.answer}`}
+                  onClick={() => onApply(c)}
+                  title="クリックで置換"
+                  style={{
+                    textAlign: "left",
+                    background: "#fff",
+                    border: "1px solid #dbe3f1",
+                    borderRadius: 10,
+                    padding: "10px 12px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 6,
+                    cursor: "pointer",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 13,
+                      lineHeight: 1.6,
+                      color: "#1b1b19",
+                    }}
+                  >
+                    {c.japanese}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      lineHeight: 1.6,
+                      color: ACCENT,
+                      borderTop: "1px dashed #e6e5e0",
+                      paddingTop: 6,
+                    }}
+                  >
+                    {c.answer}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+        {loading && (
+          <div style={{ fontSize: 13, color: "#8b95a6", padding: "0 2px" }}>
+            修正案を生成中…
+          </div>
+        )}
+        {error && (
+          <div style={{ fontSize: 12, color: "#b06a58", padding: "0 2px" }}>
+            {error}
+          </div>
+        )}
+      </div>
+
+      {/* input */}
+      <div
+        style={{
+          flex: "none",
+          borderTop: "1px solid #e0e8f4",
+          padding: "12px",
+          display: "flex",
+          gap: 8,
+          alignItems: "flex-end",
+        }}
+      >
+        <textarea
+          value={input}
+          onChange={(e) => onInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+              e.preventDefault();
+              onSend();
+            }
+          }}
+          rows={2}
+          placeholder="修正内容を入力（⌘/Ctrl+Enterで送信）"
+          style={{
+            flex: 1,
+            border: "1px solid #d8d7d1",
+            borderRadius: 8,
+            padding: "8px 10px",
+            fontSize: 13,
+            lineHeight: 1.5,
+            resize: "none",
+            color: "#1b1b19",
+            outline: "none",
+          }}
+        />
+        <button
+          type="button"
+          onClick={onSend}
+          disabled={loading || !input.trim()}
+          style={{
+            flex: "none",
+            height: 38,
+            padding: "0 16px",
+            border: "none",
+            borderRadius: 8,
+            background: loading || !input.trim() ? "#a9bde8" : ACCENT,
+            color: "#fff",
+            fontSize: 13,
+            fontWeight: 700,
+            cursor: loading || !input.trim() ? "default" : "pointer",
+          }}
+        >
+          送信
+        </button>
+      </div>
+    </aside>
   );
 }
 
