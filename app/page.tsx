@@ -49,6 +49,8 @@ export default function Home() {
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
+  // 送信済みで応答待ちの指示。即時に自分の吹き出しとして表示する。
+  const [chatPending, setChatPending] = useState<string | null>(null);
   // 直近に候補で置換された問題id（文字色アニメーション用）
   const [replacedId, setReplacedId] = useState<string | null>(null);
 
@@ -178,6 +180,9 @@ export default function Home() {
 
     setChatLoading(true);
     setChatError(null);
+    // 送信と同時に入力を空にし、自分の吹き出しを即時表示する
+    setChatInput("");
+    setChatPending(prompt);
     try {
       const res = await fetch("/api/revise", {
         method: "POST",
@@ -206,10 +211,12 @@ export default function Home() {
         ...prev,
         [target.id]: [...(prev[target.id] ?? []), turn],
       }));
-      setChatInput("");
     } catch (e) {
       setChatError(e instanceof Error ? e.message : "修正の生成に失敗しました");
+      // 失敗時は入力を復元して再送できるようにする
+      setChatInput(prompt);
     } finally {
+      setChatPending(null);
       setChatLoading(false);
     }
   }, [chatLoading, problems, chatProblemId, chatInput, chatHistories]);
@@ -1071,6 +1078,7 @@ export default function Home() {
               input={chatInput}
               onInput={setChatInput}
               loading={chatLoading}
+              pending={chatPending}
               error={chatError}
               onSend={sendChat}
               onClose={closeChat}
@@ -1385,6 +1393,7 @@ function ChatPanel({
   input,
   onInput,
   loading,
+  pending,
   error,
   onSend,
   onClose,
@@ -1394,6 +1403,7 @@ function ChatPanel({
   input: string;
   onInput: (v: string) => void;
   loading: boolean;
+  pending: string | null;
   error: string | null;
   onSend: () => void;
   onClose: () => void;
@@ -1404,11 +1414,15 @@ function ChatPanel({
       style={{
         width: 380,
         flex: "none",
-        borderLeft: "2px solid #bbddff",
+        margin: "16px 16px 16px 0",
+        border: "1px solid #cfe0f5",
+        borderRadius: 16,
         background: "#f7faff",
+        boxShadow: "0 6px 20px rgba(31,40,60,.08)",
         display: "flex",
         flexDirection: "column",
         minHeight: 0,
+        overflow: "hidden",
       }}
     >
       {/* header */}
@@ -1422,7 +1436,6 @@ function ChatPanel({
           borderBottom: "1px solid #e0e8f4",
         }}
       >
-        <span style={{ fontSize: 16 }}>💬</span>
         <div
           style={{
             flex: 1,
@@ -1556,9 +1569,31 @@ function ChatPanel({
             </div>
           </div>
         ))}
-        {loading && (
-          <div style={{ fontSize: 13, color: "#8b95a6", padding: "0 2px" }}>
-            修正案を生成中…
+        {pending !== null && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {/* 送信直後に即時表示する自分の吹き出し */}
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <div
+                style={{
+                  maxWidth: "85%",
+                  background: ACCENT,
+                  color: "#fff",
+                  padding: "8px 12px",
+                  borderRadius: "12px 12px 3px 12px",
+                  fontSize: 13,
+                  lineHeight: 1.6,
+                }}
+              >
+                {pending}
+              </div>
+            </div>
+            {loading && (
+              <div
+                style={{ fontSize: 13, color: "#8b95a6", padding: "0 2px" }}
+              >
+                修正案を生成中…
+              </div>
+            )}
           </div>
         )}
         {error && (
