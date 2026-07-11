@@ -43,6 +43,8 @@ export default function Home() {
     "次の日本文を英語に直しなさい。",
   );
   const [dragId, setDragId] = useState<string | null>(null);
+  // ドロップ時に挿入される位置（problems 配列のインデックス）。境界線の描画に使う
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // チャット（修正）機能
@@ -270,21 +272,24 @@ export default function Home() {
     setEditingId(null);
   }, [editingId]);
 
-  const reorder = useCallback(
-    (targetId: string) => {
-      setProblems((prev) => {
-        if (!dragId || dragId === targetId) return prev;
-        const from = prev.findIndex((p) => p.id === dragId);
-        const to = prev.findIndex((p) => p.id === targetId);
-        if (from < 0 || to < 0 || from === to) return prev;
-        const arr = [...prev];
-        const [m] = arr.splice(from, 1);
-        arr.splice(to, 0, m);
-        return arr;
-      });
-    },
-    [dragId],
-  );
+  // ドラッグ中は並び替えず、ドロップ確定時に dropIndex の位置へ移動する
+  const commitReorder = useCallback(() => {
+    setProblems((prev) => {
+      if (!dragId || dropIndex == null) return prev;
+      const from = prev.findIndex((p) => p.id === dragId);
+      if (from < 0) return prev;
+      // 自身を取り除いた後にインデックスがずれるぶんを補正する
+      let to = dropIndex > from ? dropIndex - 1 : dropIndex;
+      if (to === from) return prev;
+      to = clamp(to, 0, prev.length - 1);
+      const arr = [...prev];
+      const [m] = arr.splice(from, 1);
+      arr.splice(to, 0, m);
+      return arr;
+    });
+    setDragId(null);
+    setDropIndex(null);
+  }, [dragId, dropIndex]);
 
   // ---- grammar tree (再帰描画) ----
   const renderNode = (node: GrammarNode, depth: number) => {
@@ -774,19 +779,25 @@ export default function Home() {
                     // biome-ignore lint/a11y/noStaticElementInteractions: ドラッグ&ドロップで問題カードを並び替えるための意図的なハンドラー
                     <div
                       key={p.id}
-                      onDragEnter={(e) => {
+                      onDragOver={(e) => {
+                        if (!dragId) return;
                         e.preventDefault();
-                        reorder(p.id);
+                        // カード上半分なら前、下半分なら後ろに挿入する
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const after = e.clientY > rect.top + rect.height / 2;
+                        setDropIndex(after ? i + 1 : i);
                       }}
-                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        commitReorder();
+                      }}
                       style={{
+                        position: "relative",
                         display: "flex",
                         gap: 14,
                         background: "#fff",
                         border: `1px solid ${
-                          dragId === p.id || chatProblemId === p.id
-                            ? ACCENT
-                            : "#e9e8e3"
+                          chatProblemId === p.id ? ACCENT : "#e9e8e3"
                         }`,
                         borderRadius: 12,
                         padding: "16px 18px",
@@ -795,6 +806,27 @@ export default function Home() {
                         transition: "opacity .12s, border-color .12s",
                       }}
                     >
+                      {/* 挿入位置を示す境界線。カード上端に引き、末尾位置だけ最終カードの下端に引く。
+                          ドロップしても移動しない位置（ドラッグ元の前後）では描画しない */}
+                      {dragId &&
+                        problems[dropIndex ?? -1]?.id !== dragId &&
+                        problems[(dropIndex ?? -1) - 1]?.id !== dragId &&
+                        (dropIndex === i ||
+                          (dropIndex === i + 1 &&
+                            i === problems.length - 1)) && (
+                          <div
+                            style={{
+                              position: "absolute",
+                              left: 0,
+                              right: 0,
+                              [dropIndex === i ? "top" : "bottom"]: -7,
+                              height: 2,
+                              background: ACCENT,
+                              borderRadius: 2,
+                              pointerEvents: "none",
+                            }}
+                          />
+                        )}
                       {/* drag handle */}
                       <div
                         title="ドラッグして並び替え"
@@ -802,8 +834,12 @@ export default function Home() {
                         onDragStart={(e) => {
                           e.dataTransfer.effectAllowed = "move";
                           setDragId(p.id);
+                          setDropIndex(null);
                         }}
-                        onDragEnd={() => setDragId(null)}
+                        onDragEnd={() => {
+                          setDragId(null);
+                          setDropIndex(null);
+                        }}
                         style={{
                           cursor: "grab",
                           color: "#c4c3b8",
