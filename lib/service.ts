@@ -107,8 +107,8 @@ export async function generateProblems(
     const idToLabel = new Map(leaves.map((l) => [l.leaf.id, l.leaf.label]))
 
     const response = await getClient().chat.completions.parse({
-        model: "gpt-5.4-mini",
-        reasoning_effort: "medium",
+        model: "gpt-5.6-luna",
+        reasoning_effort: "low",
         messages: [
             { role: "system", content: buildPrompt(leaves, req.count, req.difficulty) },
         ],
