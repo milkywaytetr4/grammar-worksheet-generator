@@ -774,17 +774,11 @@ export default function Home() {
                     // biome-ignore lint/a11y/noStaticElementInteractions: ドラッグ&ドロップで問題カードを並び替えるための意図的なハンドラー
                     <div
                       key={p.id}
-                      draggable={!editing}
-                      onDragStart={(e) => {
-                        e.dataTransfer.effectAllowed = "move";
-                        setDragId(p.id);
-                      }}
                       onDragEnter={(e) => {
                         e.preventDefault();
                         reorder(p.id);
                       }}
                       onDragOver={(e) => e.preventDefault()}
-                      onDragEnd={() => setDragId(null)}
                       style={{
                         display: "flex",
                         gap: 14,
@@ -804,6 +798,12 @@ export default function Home() {
                       {/* drag handle */}
                       <div
                         title="ドラッグして並び替え"
+                        draggable={!editing}
+                        onDragStart={(e) => {
+                          e.dataTransfer.effectAllowed = "move";
+                          setDragId(p.id);
+                        }}
+                        onDragEnd={() => setDragId(null)}
                         style={{
                           cursor: "grab",
                           color: "#c4c3b8",
@@ -811,7 +811,11 @@ export default function Home() {
                           lineHeight: 0.7,
                           letterSpacing: "1px",
                           userSelect: "none",
-                          alignSelf: "center",
+                          alignSelf: "stretch",
+                          display: "flex",
+                          alignItems: "center",
+                          padding: "0 6px",
+                          margin: "-16px 0 -16px -18px",
                         }}
                       >
                         ⠿
