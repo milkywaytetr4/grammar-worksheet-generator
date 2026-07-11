@@ -77,6 +77,7 @@ export function buildPrompt(
         "直訳的で構わないので、その日本語を元に英作文したときに、求めている文法事項が自然と入るような形にしてください。",
         "全体的に見て、生成された文の主語が偏らないようにしてください",
         "{簡単な主語}{be動詞}{文法事項を含む目的語}の形が多くならないようにして下さい",
+        "文法のexapmlesにとらわれない文を期待しています。",
         "",
         "【文法事項】",
         pointsBlock,
@@ -212,8 +213,8 @@ export async function reviseProblem(req: ReviseRequest): Promise<ReviseResponse>
     })
 
     const response = await getClient().chat.completions.parse({
-        model: "gpt-5.4-mini",
-        reasoning_effort: "medium",
+        model: "gpt-5.6-luna",
+        reasoning_effort: "low",
         messages,
         response_format: zodResponseFormat(reviseResponseSchema, "revise_response"),
     })

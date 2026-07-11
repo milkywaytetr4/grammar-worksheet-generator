@@ -124,13 +124,13 @@ export const grammarNotes: Record<string, GrammarNote> = {
     },
     "rel-adjective": {
         description:
-            "関係形容詞は、直後の名詞を内側から修飾しながら文をつなぐ。which / whose / what が使える。",
+            "関係形容詞は、直後の名詞を内側から修飾しながら文をつなぐ。which / what が使える。",
     },
     "rel-adjective-which": {
         description:
-            "関係形容詞の which / whose。which は必ず非制限用法(コンマ付き)で、前の内容を受けて「その〜」と後ろの名詞を修飾する。",
+            "関係形容詞の which。which は必ず非制限用法(コンマ付き)で、前の内容を受けて「その〜」と後ろの名詞を修飾する。「,前置詞+which+名詞」となることが多い。",
         examples: [
-            "The talks lasted three days, during which time no deal was reached.",
+            "He may not come, in which case we will go without him.（主節の推量を表す表現を受けて、その場合は～となっていることに注意）",
             "He was late again, which behavior annoyed his boss.",
         ],
     },

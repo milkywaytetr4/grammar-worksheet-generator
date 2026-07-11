@@ -61,8 +61,8 @@ export const grammarTree: GrammarNode[] = [
                 id: "rel-adjective",
                 label: "関係形容詞",
                 children: [
-                    { id: "rel-adjective-which", label: "which / whose" },
-                    { id: "rel-adjective-what", label: "what (すべての〜)" },
+                    { id: "rel-adjective-which", label: "関係形容詞のwhich" },
+                    { id: "rel-adjective-what", label: "関係形容詞のwhat (すべての〜)" },
                 ],
             },
             {
