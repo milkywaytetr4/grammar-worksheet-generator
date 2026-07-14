@@ -94,6 +94,16 @@ export const grammarNotes: Record<string, GrammarNote> = {
             "the principle on which the theory rests",
         ],
     },
+    "rel-pronoun-prep-advanced": {
+        description:
+            "「前置詞 + 関係代名詞」の発展型。some of whom / most of which のように数量詞が前に付いて先行詞の一部・全部を受ける形と、the price of which / on top of which のように名詞や前置詞句ごと関係代名詞につながる形がある。コンマ付きの非制限用法で使われることが多い。",
+        examples: [
+            "We interviewed ten candidates, some of whom had studied abroad.",
+            "She gave three reasons, none of which convinced me.",
+            "They launched a new service, the success of which surprised everyone.",
+            "He lost his job, on top of which his car broke down.",
+        ],
+    },
     "rel-pronoun-chain": {
         description:
             "連鎖関係代名詞。I think / they say などの挿入をはさむ形で、関係代名詞はその奥の文の欠けた要素を指す(a man who I think is honest)。",
@@ -167,9 +177,31 @@ export const grammarNotes: Record<string, GrammarNote> = {
     "rel-nonrestrictive": {
         description:
             "非制限用法。コンマを置いて先行詞に補足説明を加える(限定はしない)。that は使えず、非制限では who / which を用いる。",
+    },
+    "rel-nonrestrictive-basic": {
+        description:
+            "先行詞(普通名詞)にコンマで補足説明を加える基本形。制限用法が先行詞を絞り込むのに対し、非制限用法はすでに定まっている先行詞に情報を付け足す。",
         examples: [
             "My uncle, who lives in Osaka, is a doctor.",
             "The proposal, which took months to draft, was rejected.",
+        ],
+    },
+    "rel-nonrestrictive-sentence": {
+        description:
+            "コンマ + which が直前の文の全体または一部を先行詞として受ける形。「そしてそのことは〜」という意味になる。この働きを持つのは which だけで、who / that は使えない。",
+        examples: [
+            "He said nothing, which made her even more anxious.",
+            "The train was delayed, which meant we missed the meeting.",
+            "She speaks four languages, which I think is impressive.",
+        ],
+    },
+    "rel-nonrestrictive-proper": {
+        description:
+            "固有名詞が先行詞になる形。固有名詞は指す対象が初めから一意に定まっているため、関係詞節で限定することができず、必ずコンマ付きの非制限用法になる。",
+        examples: [
+            "Kyoto, which was once the capital of Japan, attracts millions of tourists.",
+            "Mr. Tanaka, who joined the team last month, will lead the project.",
+            "Mt. Fuji, which is the highest mountain in Japan, can be seen from the office.",
         ],
     },
     "rel-compound": {

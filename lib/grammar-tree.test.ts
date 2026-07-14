@@ -61,6 +61,7 @@ describe("collectLeavesWithPath", () => {
             "rel-pronoun-object",
             "rel-pronoun-possessive",
             "rel-pronoun-prep",
+            "rel-pronoun-prep-advanced",
             "rel-pronoun-chain",
         ])
         const subject = result[0]

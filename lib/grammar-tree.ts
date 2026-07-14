@@ -46,6 +46,7 @@ export const grammarTree: GrammarNode[] = [
                     { id: "rel-pronoun-object", label: "目的格 (省略可)" },
                     { id: "rel-pronoun-possessive", label: "所有格 whose" },
                     { id: "rel-pronoun-prep", label: "前置詞 + 関係代名詞" },
+                    { id: "rel-pronoun-prep-advanced", label: "前置詞 + 関係代名詞の発展型 (some of whom など)" },
                     { id: "rel-pronoun-chain", label: "連鎖関係代名詞" },
                 ],
             },
@@ -73,7 +74,15 @@ export const grammarTree: GrammarNode[] = [
                     { id: "rel-adverb-noantecedent", label: "先行詞の省略 (名詞節)" },
                 ],
             },
-            { id: "rel-nonrestrictive", label: "非制限用法" },
+            {
+                id: "rel-nonrestrictive",
+                label: "非制限用法",
+                children: [
+                    { id: "rel-nonrestrictive-basic", label: "基本 (補足説明)" },
+                    { id: "rel-nonrestrictive-sentence", label: "文の全体・一部が先行詞" },
+                    { id: "rel-nonrestrictive-proper", label: "固有名詞が先行詞" },
+                ],
+            },
             {
                 id: "rel-compound",
                 label: "複合関係詞",
