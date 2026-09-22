@@ -31,6 +31,14 @@ export const grammarTree: GrammarNode[] = [
         children: [
             { id: "participle-adj", label: "形容詞的用法" },
             { id: "participle-construction", label: "分詞構文" },
+            {
+                id: "participle-construction-independent",
+                label: "独立分詞構文",
+                children: [
+                    { id: "participle-construction-independent-subject", label: "意味上の主語を明示する形" },
+                    { id: "participle-construction-independent-idiom", label: "慣用表現 (generally speaking など)" },
+                ],
+            },
             { id: "participle-with", label: "付帯状況の with" },
         ],
     },

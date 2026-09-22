@@ -369,4 +369,28 @@ export const grammarNotes: Record<string, GrammarNote> = {
             "a piece of advice",
         ],
     },
+    "participle-construction-independent": {
+        description:
+            "独立分詞構文。分詞の意味上の主語が主節の主語と異なるとき、分詞の前にその主語を置いて示す形。書き言葉寄りで、理由・時・付帯状況を表す。",
+    },
+    "participle-construction-independent-subject": {
+        description:
+            "意味上の主語を実際に明示する一般形。主節の主語と食い違う名詞句を分詞の前に置く。there being 〜 / it being 〜 もこの形の一種で、形式主語・存在文の主語をそのまま残したもの。付帯状況では「名詞 + 過去分詞」で体の部位や持ち物の状態を添える言い方が多い。",
+        examples: [
+            "The weather being fine, we decided to walk to the station.",
+            "There being no bus, we had to take a taxi.",
+            "It being Sunday, the office was closed.",
+            "He sat by the window, his eyes fixed on the street.",
+        ],
+    },
+    "participle-construction-independent-idiom": {
+        description:
+            "意味上の主語が we / people など一般の人に固定され、主語を書かないまま句として慣用化した形。文全体を修飾する副詞句として働き、話し手の前置きや条件づけに使われる。",
+        examples: [
+            "Generally speaking, the younger generation prefers online services.",
+            "Frankly speaking, I don't think the plan will work.",
+            "Judging from his accent, he is from the north.",
+            "All things considered, the plan worked out well.",
+        ],
+    },
 }
